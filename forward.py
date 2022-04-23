@@ -15,10 +15,7 @@ import pytmatrix
 
 class forward_Z():
     """ 
-    Class to forward model reflectivity using Leinonen and Szrymer 2015. 
-    
-    Currenly, only outputs Ku-band Z. Can add X,Ka and W in the future if needed. 
-    
+    Class to forward model reflectivity using Leinonen and Szrymer 2015.     
     """    
     
     def set_PSD(self,PSD = None,D=None,dD=None,Z_interp=False):
