@@ -8,19 +8,20 @@ location to determine the optional degree of riming following Leinonen & Szyrmer
 Copyright Joe Finlon, Univ. of Washington, 2022.
 '''
 
-''' These are commented out since the example notebook in this repo installs things'''
-# via Google Colab instead. Uncomment if using in your workflow.
 import xarray as xr
 import numpy as np
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+np.warnings.filterwarnings('ignore', message='Mean of empty slice')
+np.seterr(invalid='ignore')
 from datetime import datetime, timedelta
 from scipy.optimize import least_squares
-
 try: # try importing the pytmatrix package
     from forward import *
 except ImportError:
-    print('WARNING: The pytmatrix package cannot be installed for the psdread() function.')
-''''''
+    print(
+        'WARNING: The pytmatrix package cannot be installed for the psdread() function.'
+    )
+
     
 def psdread(
         twodsfile, hvpsfile, datestr, size_cutoff=1., minD=0.15, maxD=30.,
@@ -63,12 +64,23 @@ def psdread(
     # 2DS information
     if twodsfile is not None:
         ds1 = xr.open_dataset(twodsfile)
-        time_hhmmss = ds1['time'].values # HHMMSS from flight start date
-        time_dt = [datetime(int(datestr[0:4]), int(datestr[4:6]), int(datestr[6:])) + timedelta(
-            hours=int(str(int(time_hhmmss[i])).zfill(6)[0:2]), minutes=int(str(int(time_hhmmss[i])).zfill(6)[2:4]),
-            seconds=int(str(int(time_hhmmss[i])).zfill(6)[4:])) for i in range(len(time_hhmmss))]
-        time_str = [datetime.strftime(time_dt[i], '%Y-%m-%dT%H:%M:%S') for i in range(len(time_dt))]
-        time = np.array(time_str, dtype='datetime64[s]')
+        time_raw = ds1['time'].values # HHMMSS from flight start date or numpy.datetime64
+        if np.issubdtype(time_raw.dtype, np.datetime64): # numpy.datetime64
+            time = np.array(time_raw, dtype='datetime64[s]')
+        else: # native HHMMSS format (from UIOOPS SD file)
+            time_dt = [
+                datetime(int(datestr[0:4]), int(datestr[4:6]), int(datestr[6:]))
+                + timedelta(
+                    hours=int(str(int(time_raw[i])).zfill(6)[0:2]),
+                    minutes=int(str(int(time_raw[i])).zfill(6)[2:4]),
+                    seconds=int(str(int(time_raw[i])).zfill(6)[4:]))
+                for i in range(len(time_hhmmss))
+            ]
+            time_str = [
+                datetime.strftime(time_dt[i], '%Y-%m-%dT%H:%M:%S')
+                for i in range(len(time_dt))
+            ]
+            time = np.array(time_str, dtype='datetime64[s]')
         bin_min_2ds = ds1['bin_min'].values # mm
         bin_max_2ds = ds1['bin_max'].values
         bin_inds = np.where((bin_min_2ds>=minD) & (bin_max_2ds<=size_cutoff))[0] # find bins within user-specified range

@@ -1,3 +1,12 @@
+'''
+Contains routines to compute the Z from a PSD and accounting for degrees of riming
+based on DDA scattering simulations of Leinonen and Szyrmer (2015). Code similar
+to https://github.com/dopplerchase/Leinonen_Python_Forward_Model, but modified
+to consider additional degrees of riming per Appendix of Finlon et al. (2022).
+
+Copyright Joe Finlon, Univ. of Washington, 2022.
+'''
+
 import pandas as pd 
 import numpy as np 
 import scipy.interpolate

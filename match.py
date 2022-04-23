@@ -1,3 +1,10 @@
+'''
+Contains routines to match ER-2 radar data and outputs from the neural network
+radar retrieval of Chase et al. (2021) to the P-3 location.
+
+Copyright Joe Finlon, Univ. of Washington, 2022.
+'''
+
 import numpy as np
 from pyproj import Proj
 from scipy.spatial import cKDTree
